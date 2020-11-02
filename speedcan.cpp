@@ -34,6 +34,13 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
   pkt->frameId = msg.id;
 }
 
+void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+  encodeESC_RPMCommandPacket(&packet, RPM);
+  packetToCANmessage(packet, &message_speedcan);
+  message_speedcan.id |= 0xFF;
+  can->write(message_speedcan);
+}
+
 void incomingMessageHandler() {
   messageToESCpacket(message_speedcan, &packet);
   switch (packet.frameId | 0xFF) {
