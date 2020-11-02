@@ -34,12 +34,21 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
   pkt->frameId = msg.id;
 }
 
+// broadcasts RPM command packet on a provided CAN interface
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_RPMCommandPacket(&packet, RPM);
   packetToCANmessage(packet, &message_speedcan);
   message_speedcan.id |= 0xFF;
   can->write(message_speedcan);
 }
+
+// broadcasts PWM command on a provided CAN interface
+void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+  encodeESC_PWMCommandPacket(&packet, PWM);
+  packetToCANmessage(packet, &message_speedcan);
+  message_speedcan.id |= 0xFF;
+  can->write(message_speedcan);
+} //TODO: figure out how to reduce PWM deadzone
 
 void incomingMessageHandler() {
   messageToESCpacket(message_speedcan, &packet);
