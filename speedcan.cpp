@@ -28,23 +28,23 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
 
 // broadcasts RPM command packet on a provided CAN interface
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_RPMCommandPacket(&esc_message, RPM);
+  encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
-  esc_message.id |= ESC_BROADCAST_ADDRESS;
+  esc_message.id |= 0xFF;
   can->write(esc_message);
 }
 
 // broadcasts PWM command on a provided CAN interface
 void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_PWMCommandPacket(&esc_message, PWM);
+  encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
-  esc_message.id |= ESC_BROADCAST_ADDRESS;
+  esc_message.id |= 0xFF;
   can->write(esc_message);
 } 
 
 // writes RPM command packet to a specific device on a provided CAN interface
 void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_RPMCommandPacket(&esc_message, RPM);
+  encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
   can->write(esc_message);
@@ -52,7 +52,7 @@ void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, 
 
 // writes PWM command packet to a specific device on a provided CAN interface
 void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_PWMCommandPacket(&esc_message, PWM);
+  encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
   can->write(esc_message);
@@ -60,7 +60,7 @@ void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256
 
 void incomingMessageHandler() {
   messageToESCpacket(esc_message, &esc_packet);
-  switch (esc_packet.frameId | ESC_BROADCAST_ADDRESS) {
+  switch (esc_packet.frameId | 0xFF) {
     case 0x78020FF:   // StatusA              (0x80)
       decodeESC_StatusAPacket(&esc_packet, &escData.mode, &statusBits, &escData.command, &escData.rpm);
       break;

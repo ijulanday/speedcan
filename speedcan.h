@@ -9,8 +9,6 @@
 #ifndef SPEEDCAN_H
 #define SPEEDCAN_H
 
-#define ESC_BROADCAST_ADDRESS 0xFF
-
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg);
 void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt);
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can);
