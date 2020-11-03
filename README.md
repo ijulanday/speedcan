@@ -33,6 +33,10 @@ void loop()
   if (blink.check()) {
     led_status ^= 0x1;
     digitalWrite(LED_BUILTIN, led_status);
+    if (led_status)
+      broadcastPWMcommand(1000, &can1);
+    else
+      broadcastPWMcommand(1500, &can1);
   }
 
   if (statusUpdate.check())
