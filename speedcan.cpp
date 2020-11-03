@@ -30,7 +30,7 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_RPMCommandPacket(&esc_message, RPM);
   packetToCANmessage(esc_packet, &esc_message);
-  esc_message.id |= 0xFF;
+  esc_message.id |= ESC_BROADCAST_ADDRESS;
   can->write(esc_message);
 }
 
@@ -38,13 +38,29 @@ void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* 
 void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_PWMCommandPacket(&esc_message, PWM);
   packetToCANmessage(esc_packet, &esc_message);
-  esc_message.id |= 0xFF;
+  esc_message.id |= ESC_BROADCAST_ADDRESS;
   can->write(esc_message);
-} //TODO: figure out how to reduce PWM deadzone
+} 
+
+// writes RPM command packet to a specific device on a provided CAN interface
+void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+  encodeESC_RPMCommandPacket(&esc_message, RPM);
+  packetToCANmessage(esc_packet, &esc_message);
+  esc_message.id |= address;
+  can->write(esc_message);
+}
+
+// writes PWM command packet to a specific device on a provided CAN interface
+void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+  encodeESC_PWMCommandPacket(&esc_message, PWM);
+  packetToCANmessage(esc_packet, &esc_message);
+  esc_message.id |= address;
+  can->write(esc_message);
+} 
 
 void incomingMessageHandler() {
   messageToESCpacket(esc_message, &esc_packet);
-  switch (esc_packet.frameId | 0xFF) {
+  switch (esc_packet.frameId | ESC_BROADCAST_ADDRESS) {
     case 0x78020FF:   // StatusA              (0x80)
       decodeESC_StatusAPacket(&esc_packet, &escData.mode, &statusBits, &escData.command, &escData.rpm);
       break;
@@ -84,8 +100,8 @@ void printStatus() {
   if (statusBits.running)
     Serial.println("Motor is running on ESC ");
 
-  Serial.print("Voltage: "); Serial.println(escData.voltage);
-  Serial.print("Current: "); Serial.println(escData.current);
+  Serial.print("Voltage: "); Serial.println(escData.voltage * 0.1);   // voltage in units of decivolts
+  Serial.print("Current: "); Serial.println(escData.current * 0.1);         // current in units of deciamps
   Serial.print("RPM: "); Serial.println(escData.rpm);
 }
 

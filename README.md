@@ -39,3 +39,8 @@ void loop()
     printStatus();
 }
 ```
+
+## dependancies
+*   velocity_sdk_v3 (not on GitHub, contact Currawong or regional distributor)
+*   [FlexCAN_T4](https://github.com/tonton81/FlexCAN_T4/)
+*   Arduino
