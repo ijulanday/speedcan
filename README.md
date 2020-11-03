@@ -28,7 +28,7 @@ void setup()
  
 void loop()
 {
-  if (can1.read(message_speedcan))
+  if (can1.read(esc_message))
     incomingMessageHandler();
   if (blink.check()) {
     led_status ^= 0x1;
