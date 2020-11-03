@@ -1,19 +1,11 @@
 #include "speedcan.h"
 
-CAN_message_t message_speedcan;
-ESCPacket_t packet;
+CAN_message_t esc_message;
+ESCPacket_t esc_packet;
 ESC_StatusBits_t statusBits;
 ESC_WarningBits_t warningBits;
 ESC_ErrorBits_t errorBits;
-
-uint8_t mode;
-uint16_t command;
-uint16_t rpm;
-uint16_t voltage;
-int16_t current; 
-uint16_t dutyCycle;
-int8_t escTemperature;
-uint8_t motorTemperature;
+ESCdata escData;
 
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg) {
     msg->len = pkt.len;
@@ -36,31 +28,31 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
 
 // broadcasts RPM command packet on a provided CAN interface
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_RPMCommandPacket(&packet, RPM);
-  packetToCANmessage(packet, &message_speedcan);
-  message_speedcan.id |= 0xFF;
-  can->write(message_speedcan);
+  encodeESC_RPMCommandPacket(&esc_message, RPM);
+  packetToCANmessage(esc_packet, &esc_message);
+  esc_message.id |= 0xFF;
+  can->write(esc_message);
 }
 
 // broadcasts PWM command on a provided CAN interface
 void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
-  encodeESC_PWMCommandPacket(&packet, PWM);
-  packetToCANmessage(packet, &message_speedcan);
-  message_speedcan.id |= 0xFF;
-  can->write(message_speedcan);
+  encodeESC_PWMCommandPacket(&esc_message, PWM);
+  packetToCANmessage(esc_packet, &esc_message);
+  esc_message.id |= 0xFF;
+  can->write(esc_message);
 } //TODO: figure out how to reduce PWM deadzone
 
 void incomingMessageHandler() {
-  messageToESCpacket(message_speedcan, &packet);
-  switch (packet.frameId | 0xFF) {
+  messageToESCpacket(esc_message, &esc_packet);
+  switch (esc_packet.frameId | 0xFF) {
     case 0x78020FF:   // StatusA              (0x80)
-      decodeESC_StatusAPacket(&packet, &mode, &statusBits, &command, &rpm);
+      decodeESC_StatusAPacket(&esc_packet, &escData.mode, &statusBits, &escData.command, &escData.rpm);
       break;
     case 0x78120FF:   // StatusB              (0x81)
-      decodeESC_StatusBPacket(&packet, &voltage, &current, &dutyCycle, &escTemperature, &motorTemperature);
+      decodeESC_StatusBPacket(&esc_packet, &escData.voltage, &escData.current, &escData.dutyCycle, &escData.escTemperature, &escData.motorTemperature);
       break;
     case 0x78620FF:   // WarningErrorStatus   (0x86)
-      decodeESC_WarningErrorStatusPacket(&packet, &warningBits, &errorBits);
+      decodeESC_WarningErrorStatusPacket(&esc_packet, &warningBits, &errorBits);
       printErrorsAndWarnings();
       break;
     case 0x78720FF:   // MotorStatusFlags     (0x87)
@@ -92,8 +84,9 @@ void printStatus() {
   if (statusBits.running)
     Serial.println("Motor is running on ESC ");
 
-  Serial.print("Voltage: "); Serial.println(voltage);
-  Serial.print("Current: "); Serial.println(current);
+  Serial.print("Voltage: "); Serial.println(escData.voltage);
+  Serial.print("Current: "); Serial.println(escData.current);
+  Serial.print("RPM: "); Serial.println(escData.rpm);
 }
 
 void printErrorsAndWarnings() {

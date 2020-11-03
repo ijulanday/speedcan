@@ -16,19 +16,23 @@ void printMsg(CAN_message_t msg);
 void printStatus();
 void printErrorsAndWarnings();
 
-extern CAN_message_t message_speedcan;
-extern ESCPacket_t packet;
+extern CAN_message_t esc_message;
+extern ESCPacket_t esc_packet;
 extern ESC_StatusBits_t statusBits;
 extern ESC_WarningBits_t warningBits;
 extern ESC_ErrorBits_t errorBits;
 
-extern uint8_t mode;
-extern uint16_t command;
-extern uint16_t rpm;
-extern uint16_t voltage;
-extern int16_t current; 
-extern uint16_t dutyCycle;
-extern int8_t escTemperature;
-extern uint8_t motorTemperature;
+typedef struct {
+    uint8_t mode;
+    uint16_t command;
+    uint16_t rpm;
+    uint16_t voltage;
+    int16_t current; 
+    uint16_t dutyCycle;
+    int8_t escTemperature;
+    uint8_t motorTemperature;
+} ESCdata;
+
+extern ESCdata escData;
 
 #endif
