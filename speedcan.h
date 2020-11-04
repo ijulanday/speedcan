@@ -9,12 +9,6 @@
 #ifndef SPEEDCAN_H
 #define SPEEDCAN_H
 
-#define THROTTLE_MAX_PWM  1000
-#define THROTTLE_MIN_PWM  1500
-#define TMAP_MAX_IN       1500
-#define TMAP_MIN_IN       1000
-#define TMAP_MAX_OUT      1000
-#define TMAP_MIN_OUT      2000
 #define ESC_COMM_TIMEOUT  1500
 
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg);
