@@ -7,6 +7,7 @@ ESC_WarningBits_t warningBits;
 ESC_ErrorBits_t errorBits;
 ESCdata escData;
 
+// translates velocity sdk packet to flexcan message object
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg) {
     msg->len = pkt.len;
     int i;
@@ -17,6 +18,7 @@ void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg) {
     msg->id = pkt.frameId;
 }
 
+// translates flexcan message to velocity sdk packet object
 void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
   pkt->len = msg.len;
   int i;
@@ -26,7 +28,7 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
   pkt->frameId = msg.id;
 }
 
-// broadcasts RPM command packet on a provided CAN interface
+// broadcasts RPM command packet on a provided CAN interface```
 void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
@@ -58,7 +60,8 @@ void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256
   can->write(esc_message);
 } 
 
-void incomingMessageHandler() {
+// handler function to be called when reading a can packet
+void escIncomingMessageHandler() {
   messageToESCpacket(esc_message, &esc_packet);
   switch (esc_packet.frameId | 0xFF) {
     case 0x78020FF:   // StatusA              (0x80)
@@ -77,6 +80,11 @@ void incomingMessageHandler() {
   }
 }
 
+/**
+ * printing functions for serial debugging
+ * 
+ * 
+ * */
 void printMsg(CAN_message_t msg) {
   Serial.print("message ID: "); Serial.println(msg.id, HEX);
   Serial.print("message len: "); Serial.println(msg.len);
@@ -128,3 +136,8 @@ void printErrorsAndWarnings() {
   if (errorBits.overspeed)       Serial.println("ERROR: Motor commutation speed exceeded hard-limit");
   if (errorBits.demag)           Serial.println("ERROR: Motor stopped due to high demag angle");
 }   
+
+/* function to be called when implementing flexcan mailboxes (unused) */
+void canSniff(const CAN_message_t &msg) {
+  Serial.println("got something");
+}
