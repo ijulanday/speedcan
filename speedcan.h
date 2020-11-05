@@ -38,6 +38,7 @@ typedef struct {
     uint16_t dutyCycle;
     int8_t escTemperature;
     uint8_t motorTemperature;
+    uint8_t powerUsage;
 } ESCdata;
 
 extern ESCdata escData;

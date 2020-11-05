@@ -7,6 +7,10 @@ ESC_WarningBits_t warningBits;
 ESC_ErrorBits_t errorBits;
 ESCdata escData;
 
+void calculatePower() {
+  escData.powerUsage = escData.current * 0.1 * escData.voltage * 0.1;
+}
+
 // translates velocity sdk packet to flexcan message object
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg) {
     msg->len = pkt.len;
@@ -69,6 +73,7 @@ void escIncomingMessageHandler() {
       break;
     case 0x78120FF:   // StatusB              (0x81)
       decodeESC_StatusBPacket(&esc_packet, &escData.voltage, &escData.current, &escData.dutyCycle, &escData.escTemperature, &escData.motorTemperature);
+      calculatePower();
       break;
     case 0x78620FF:   // WarningErrorStatus   (0x86)
       decodeESC_WarningErrorStatusPacket(&esc_packet, &warningBits, &errorBits);
@@ -77,6 +82,7 @@ void escIncomingMessageHandler() {
     case 0x78720FF:   // MotorStatusFlags     (0x87)
       // meh
       break;
+    // add more cases for particularly useful messages
   }
 }
 
