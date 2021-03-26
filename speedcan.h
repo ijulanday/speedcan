@@ -13,10 +13,10 @@
 
 void packetToCANmessage(ESCPacket_t pkt, CAN_message_t* msg);
 void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt);
-void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can);
-void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can);
-void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can);
-void writePWMcommand(double PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can);
+CAN_message_t broadcastRPMcommand(double RPM);
+CAN_message_t broadcastPWMcommand(uint16_t PWM);
+CAN_message_t writeRPMcommand(double RPM, uint8_t address);
+CAN_message_t writePWMcommand(double PWM, uint8_t address);
 void escIncomingMessageHandler();
 void printMsg(CAN_message_t msg);
 void printStatus();

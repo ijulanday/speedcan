@@ -33,7 +33,7 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
 }
 
 // broadcasts RPM command packet on a provided CAN interface```
-void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+CAN_message_t broadcastRPMcommand(double RPM) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= 0xFF;
@@ -41,27 +41,27 @@ void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* 
 }
 
 // broadcasts PWM command on a provided CAN interface
-void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+CAN_message_t broadcastPWMcommand(uint16_t PWM) {
   encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= 0xFF;
-  can->write(esc_message);
+  return esc_message;
 } 
 
 // writes RPM command packet to a specific device on a provided CAN interface
-void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+CAN_message_t writeRPMcommand(double RPM, uint8_t address) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
-  can->write(esc_message);
+  return esc_message;
 }
 
 // writes PWM command packet to a specific device on a provided CAN interface
-void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16>* can) {
+CAN_message_t writePWMcommand(uint16_t PWM, uint8_t address) {
   encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
-  can->write(esc_message);
+  return esc_message;
 } 
 
 // handler function to be called when reading a can packet
