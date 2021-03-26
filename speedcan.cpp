@@ -37,7 +37,7 @@ CAN_message_t broadcastRPMcommand(double RPM) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= 0xFF;
-  can->write(esc_message);
+  return esc_message;
 }
 
 // broadcasts PWM command on a provided CAN interface
