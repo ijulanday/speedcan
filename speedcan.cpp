@@ -33,7 +33,7 @@ void messageToESCpacket(CAN_message_t msg, ESCPacket_t* pkt) {
 }
 
 // broadcasts RPM command packet on a provided CAN interface```
-void broadcastRPMcommand(double RPM, FlexCAN_T4_Base* can) {
+void broadcastRPMcommand(double RPM, FlexCAN_T4<CAN_IFACE, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= 0xFF;
@@ -41,15 +41,22 @@ void broadcastRPMcommand(double RPM, FlexCAN_T4_Base* can) {
 }
 
 // broadcasts PWM command on a provided CAN interface
-void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4_Base* can) {
+void broadcastPWMcommand(uint16_t PWM, FlexCAN_T4<CAN_IFACE, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= 0xFF;
   can->write(esc_message);
 } 
 
+void broadcastEnableCommand(FlexCAN_T4<CAN_IFACE, RX_SIZE_256, TX_SIZE_16>* can) {
+  encodeESC_EnablePacket(&esc_packet);
+  packetToCANmessage(esc_packet, &esc_message);
+  esc_message.id |= 0xFF;
+  can->write(esc_message);
+}
+
 // writes RPM command packet to a specific device on a provided CAN interface
-void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4_Base* can) {
+void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4<CAN_IFACE, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_RPMCommandPacket(&esc_packet, RPM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
@@ -57,7 +64,7 @@ void writeRPMcommand(double RPM, uint8_t address, FlexCAN_T4_Base* can) {
 }
 
 // writes PWM command packet to a specific device on a provided CAN interface
-void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4_Base* can) {
+void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN_IFACE, RX_SIZE_256, TX_SIZE_16>* can) {
   encodeESC_PWMCommandPacket(&esc_packet, PWM);
   packetToCANmessage(esc_packet, &esc_message);
   esc_message.id |= address;
@@ -74,6 +81,9 @@ void escIncomingMessageHandler() {
     case 0x78120FF:   // StatusB              (0x81)
       decodeESC_StatusBPacket(&esc_packet, &escData.voltage, &escData.current, &escData.dutyCycle, &escData.escTemperature, &escData.motorTemperature);
       calculatePower();
+      break;
+    case 0x79A20FF:   // telltales            (0x9A)
+      decodeESC_TelltaleValuesPacket(&esc_packet, &escData.maxTemperature, &escData.maxFetTemperature, &escData.maxMotorTemperature, &escData.maxRippleVoltage, &escData.maxBatteryCurrent, &escData.maxRegenCurrent, &escData.totalStarts, &escData.failedStarts, &escData.escRunTime, &escData.motorRunTime, &escData.desyncEvents);
       break;
     case 0x78620FF:   // WarningErrorStatus   (0x86)
       decodeESC_WarningErrorStatusPacket(&esc_packet, &warningBits, &errorBits);
