@@ -1,8 +1,8 @@
-#ifndef SPEEDCAN_H
-#define SPEEDCAN_H
+#pragma once
 
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
+#include <list>
 #include "velocity_sdk/esc_glue.h"
 #include "velocity_sdk/ESCVelocityProtocol.h"
 #include "velocity_sdk/ESCPackets.h"
@@ -30,6 +30,7 @@ extern ESC_WarningBits_t warningBits;
 extern ESC_ErrorBits_t errorBits;
 
 typedef struct {
+    uint8_t lastId;
     uint8_t mode;
     uint16_t command;
     uint16_t rpm;
@@ -38,7 +39,7 @@ typedef struct {
     uint16_t dutyCycle;
     int8_t escTemperature;
     uint8_t motorTemperature;
-    uint8_t powerUsage;
+    uint16_t powerUsage;
     uint8_t maxTemperature; 
     uint8_t maxFetTemperature;
     uint8_t maxMotorTemperature;
@@ -50,8 +51,10 @@ typedef struct {
     uint32_t escRunTime;
     uint32_t motorRunTime;
     uint32_t desyncEvents;
+    float fetTemperature;
+    uint16_t pwmFrequency;
+    uint16_t timingAdvance;
+    uint32_t averageCurrent;
 } ESCdata;
 
 extern ESCdata escData;
-
-#endif

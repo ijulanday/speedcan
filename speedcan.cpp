@@ -7,7 +7,23 @@ ESC_WarningBits_t warningBits;
 ESC_ErrorBits_t errorBits;
 ESCdata escData;
 
+std::list<int> currentReadings;
+int incrementor = 0;
+
 void calculatePower() {
+  if (escData.current < 0) return;
+  
+  if (incrementor < 10) 
+    incrementor++;
+  else 
+    currentReadings.pop_front();
+  
+  currentReadings.push_back(escData.current);
+  
+  for (std::list<int>::iterator it = currentReadings.begin(); it != currentReadings.end(); it++)
+    escData.averageCurrent += *it;
+  escData.averageCurrent /= incrementor;
+
   escData.powerUsage = escData.current * 0.1 * escData.voltage * 0.1;
 }
 
@@ -75,12 +91,16 @@ void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN_IFACE, RX_SIZ
 void escIncomingMessageHandler() {
   messageToESCpacket(esc_message, &esc_packet);
   switch (esc_packet.frameId | 0xFF) {
+    escData.lastId = esc_packet.frameId & 0x000000ff;
     case 0x78020FF:   // StatusA              (0x80)
       decodeESC_StatusAPacket(&esc_packet, &escData.mode, &statusBits, &escData.command, &escData.rpm);
       break;
     case 0x78120FF:   // StatusB              (0x81)
       decodeESC_StatusBPacket(&esc_packet, &escData.voltage, &escData.current, &escData.dutyCycle, &escData.escTemperature, &escData.motorTemperature);
       calculatePower();
+      break;
+    case 0x78220FF:   // StatusC              (0x82)
+      decodeESC_StatusCPacket(&esc_packet, &escData.fetTemperature, &escData.pwmFrequency, &escData.timingAdvance);
       break;
     case 0x79A20FF:   // telltales            (0x9A)
       decodeESC_TelltaleValuesPacket(&esc_packet, &escData.maxTemperature, &escData.maxFetTemperature, &escData.maxMotorTemperature, &escData.maxRippleVoltage, &escData.maxBatteryCurrent, &escData.maxRegenCurrent, &escData.totalStarts, &escData.failedStarts, &escData.escRunTime, &escData.motorRunTime, &escData.desyncEvents);
