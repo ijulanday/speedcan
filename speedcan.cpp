@@ -91,7 +91,7 @@ void writePWMcommand(uint16_t PWM, uint8_t address, FlexCAN_T4<CAN_IFACE, RX_SIZ
 void escIncomingMessageHandler() {
   messageToESCpacket(esc_message, &esc_packet);
   switch (esc_packet.frameId | 0xFF) {
-    escData.lastId = esc_packet.frameId & 0x000000ff;
+    escData.lastId = esc_packet.frameId << 24;
     case 0x78020FF:   // StatusA              (0x80)
       decodeESC_StatusAPacket(&esc_packet, &escData.mode, &statusBits, &escData.command, &escData.rpm);
       break;
